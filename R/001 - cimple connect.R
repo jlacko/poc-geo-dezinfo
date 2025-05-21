@@ -51,3 +51,16 @@ query_basis %>%
    spq_head(100) %>% 
    spq_arrange(desc(date)) %>% 
    spq_perform()
+
+
+# dny se zmínkou o pivu (kdekoliv) sestupně podle počtu zmínek
+query_basis %>%
+   spq_prefix(prefixes = c("schema" = "http://schema.org/",
+                           "dbr" = "http://dbpedia.org/resource/")) %>% 
+   spq_add("?s schema:mentions dbr:Beer") %>% 
+   spq_add("?s schema:text ?text") %>% 
+   spq_add("?s schema:datePublished ?date") %>% 
+   spq_group_by(date) %>% 
+   spq_summarise(n = n()) %>% 
+   spq_arrange(desc(n)) %>% 
+   spq_perform()
