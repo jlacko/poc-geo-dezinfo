@@ -41,3 +41,13 @@ query_basis %>%
    spq_head(10) %>% 
    spq_perform()
 
+# cokoliv (bez rozdílu typu) co zmiňuje pivo podle datumu sestupně
+query_basis %>%
+   spq_prefix(prefixes = c("schema" = "http://schema.org/",
+                           "dbr" = "http://dbpedia.org/resource/")) %>% 
+   spq_add("?s schema:mentions dbr:Beer") %>% 
+   spq_add("?s schema:text ?text") %>% 
+   spq_add("?s schema:datePublished ?date") %>% 
+   spq_head(100) %>% 
+   spq_arrange(desc(date)) %>% 
+   spq_perform()
