@@ -42,19 +42,20 @@ query_basis %>%
    spq_perform()
 
 # cokoliv (bez rozdílu typu) co zmiňuje pivo podle datumu sestupně
-query_basis %>%
+query <- query_basis %>%
    spq_prefix(prefixes = c("schema" = "http://schema.org/",
                            "dbr" = "http://dbpedia.org/resource/")) %>% 
    spq_add("?s schema:mentions dbr:Beer") %>% 
    spq_add("?s schema:text ?text") %>% 
    spq_add("?s schema:datePublished ?date") %>% 
-   spq_head(100) %>% 
-   spq_arrange(desc(date)) %>% 
-   spq_perform()
+   spq_head(100) 
+
+sequins::plot_query(query) 
+spq_perform(query)
 
 
 # dny se zmínkou o pivu (kdekoliv) sestupně podle počtu zmínek
-query_basis %>%
+query <- query_basis %>%
    spq_prefix(prefixes = c("schema" = "http://schema.org/",
                            "dbr" = "http://dbpedia.org/resource/")) %>% 
    spq_add("?s schema:mentions dbr:Beer") %>% 
@@ -62,5 +63,7 @@ query_basis %>%
    spq_add("?s schema:datePublished ?date") %>% 
    spq_group_by(date) %>% 
    spq_summarise(n = n()) %>% 
-   spq_arrange(desc(n)) %>% 
-   spq_perform()
+   spq_arrange(desc(n)) 
+
+sequins::plot_query(query) 
+spq_perform(query)
