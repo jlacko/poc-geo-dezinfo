@@ -98,6 +98,21 @@ cat(paste("count of mentions:", ntr$n, "\n"), file = vystup, append = T)
 
 cat(paste(Sys.time(), "finish\n"), file = vystup, append = T)
 
+cat("\nCount - period\n", file = vystup, append = T)
+cat(paste(Sys.time(), "start\n"), file = vystup, append = T)
+
+query_basis %>%
+   spq_prefix(prefixes = c("schema" = "http://schema.org/",
+                           "dbr" = "http://dbpedia.org/resource/")) %>% 
+   spq_add("?s schema:text ?text") %>% 
+   spq_add("?s schema:datePublished ?date") %>% 
+   spq_summarise(n = n()) %>% 
+   spq_perform() -> ntr
+
+cat(paste("count of mentions:", ntr$n, "\n"), file = vystup, append = T)
+
+cat(paste(Sys.time(), "finish\n"), file = vystup, append = T)
+
 
 cat("\nFull load - beer\n", file = vystup, append = T)
 cat(paste(Sys.time(), "start\n"), file = vystup, append = T)
@@ -156,5 +171,19 @@ query_basis %>%
    spq_perform() -> dtr
 
 cat(paste("count of mentions:", nrow(dtr), "\n"), file = vystup, append = T)
+
+cat(paste(Sys.time(), "finish\n"), file = vystup, append = T)
+
+cat("\nFull load - period\n", file = vystup, append = T)
+cat(paste(Sys.time(), "start\n"), file = vystup, append = T)
+
+query_basis %>%
+   spq_prefix(prefixes = c("schema" = "http://schema.org/",
+                           "dbr" = "http://dbpedia.org/resource/")) %>% 
+   spq_add("?s schema:text ?text") %>% 
+   spq_add("?s schema:datePublished ?date") %>% 
+   spq_perform() -> everything
+
+cat(paste("count of mentions:", nrow(everything), "\n"), file = vystup, append = T)
 
 cat(paste(Sys.time(), "finish\n"), file = vystup, append = T)
