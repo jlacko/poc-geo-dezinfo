@@ -1,13 +1,14 @@
 library(glitter) # SPARQL query
 library(dplyr)
 
-vystup <- "./output/benchmark_cimple.txt"
-
+#vystup <- "./output/benchmark_cimple.txt"
+vystup <- "./output/benchmark_cs.txt"
 
 
 # the real thing ... https://lvaudor.github.io/glitter/articles/explore.html
 query_basis = spq_init(
-   endpoint = "https://data.cimple.eu/sparql"
+#   endpoint = "https://data.cimple.eu/sparql"
+   endpoint = "http://data.climatesense-project.eu/sparql"
 )
 
 cat("Basic basic - beer 10\n", file = vystup)
