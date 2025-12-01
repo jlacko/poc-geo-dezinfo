@@ -38,7 +38,7 @@ result <- spq_perform(query) # let the magic happen!
 # digest the results & save for future use
 result %>% 
    unique() %>% 
-   mutate(claim = str_remove(claim, "http://data.climatesense-project.eu/claim/2")) %>% 
+   mutate(claim = str_remove(claim, "http://data.climatesense-project.eu/claim/")) %>% 
    mutate(mentioned = str_remove(mentioned, "http://dbpedia.org/resource/")) %>% 
    mutate(subject = str_remove(subject, "http://data.climatesense-project.eu/claim-review/")) %>% 
    select(-reviewer) %>% 
