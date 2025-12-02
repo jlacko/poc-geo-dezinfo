@@ -47,5 +47,5 @@ result %>%
 
 cat(paste("count of mentions:", nrow(result), "\n"), file = vystup, append = T)
 
-cat(paste(Sys.time(), "finish\nelapsed time", round(Sys.time() - start_time, 2), "seconds\n"), file = vystup, append = T)
+cat(paste(Sys.time(), "finish\nelapsed time", round(difftime(Sys.time(), start_time, unit = "secs"), 2), "seconds\n"), file = vystup, append = T)
    
