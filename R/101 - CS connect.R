@@ -26,3 +26,12 @@ query <- query_basis %>%
 
 sequins::plot_query(query) 
 spq_perform(query)
+
+
+# query vybraného typu
+query_basis %>%
+   spq_add("?subject rdf:type schema:ClaimReview ") %>%
+   spq_add("?subject schema:author ?reviewer") %>% 
+   spq_add("?reviewer schema:name 'afp-fact-checking'") %>%
+   spq_head(20) %>% 
+   spq_perform()

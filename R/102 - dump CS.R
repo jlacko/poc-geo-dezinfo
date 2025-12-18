@@ -3,49 +3,55 @@ library(dplyr)
 library(stringr)
 library(sf)
 
+start_time <- Sys.time()
 vystup <- "./output/benchmark_cs.txt"
 
+cat("\n", file = vystup, append = T)
 cat(paste(Sys.time(), "start\n"), file = vystup, append = T)
-start_time <- Sys.time()
 
-# the real thing ... https://lvaudor.github.io/glitter/articles/explore.html
+# the real thing ... 
 query_basis = spq_init(
    endpoint = "http://data.climatesense-project.eu/sparql"
 )
 
-# compose the query
-query <- query_basis %>%
-   spq_prefix(prefixes = c("schema" = "http://schema.org/",
-                           "dbr" = "http://dbpedia.org/resource/",
-                           "geo" = "http://www.w3.org/2003/01/geo/wgs84_pos",
-                           "cs" = "http://data.climatesense-project.eu/ontology#",
-                           "dbp" = "http://dbpedia.org/property/")) %>% 
-#   spq_add("?subject schema:mentions dbr:Aigle") %>% # Nostradamus & his Eagle is mentioned exactly once
-   spq_add("?subject rdf:type schema:ClaimReview") %>%
-   spq_add("?subject schema:mentions ?mentioned") %>% 
-   spq_add("?subject schema:datePublished ?date") %>% 
-   spq_add("?subject schema:author ?reviewer") %>% 
-   spq_add("?reviewer schema:name ?org") %>% 
-   spq_add("?subject schema:itemReviewed ?claim") %>% 
-   spq_add("?claim cs:isClimateRelated true") %>% # who cares about climate unrelated claims?
-   spq_add("?mentioned geo:geometry ?geo") %>% 
-   spq_head(500000) # not an issue for climate related claims only (~200K rows)
+# iterate over history of interest
+for (year in 2000:lubridate::year(Sys.Date())) {
 
-sequins::plot_query(query) # check the query layout visually
-
-result <- spq_perform(query) # let the magic happen!
-
-# digest the results & save for future use
-result %>% 
-   unique() %>% 
-   mutate(claim = str_remove(claim, "http://data.climatesense-project.eu/claim/")) %>% 
-   mutate(mentioned = str_remove(mentioned, "http://dbpedia.org/resource/")) %>% 
-   mutate(subject = str_remove(subject, "http://data.climatesense-project.eu/claim-review/")) %>% 
-   select(-reviewer) %>% 
-   st_as_sf(wkt = "geo", crs = 4326) %>% 
-   st_write("./data/dezinfo.gpkg", append = F)
-
-cat(paste("count of mentions:", nrow(result), "\n"), file = vystup, append = T)
-
-cat(paste(Sys.time(), "finish\nelapsed time", round(difftime(Sys.time(), start_time, unit = "secs"), 2), "seconds\n"), file = vystup, append = T)
+   # compose the query
+   query <- query_basis %>%
+      spq_prefix(prefixes = c("schema" = "http://schema.org/",
+                              "dbr" = "http://dbpedia.org/resource/",
+                              "geo" = "http://www.w3.org/2003/01/geo/wgs84_pos",
+                              "cs" = "http://data.climatesense-project.eu/ontology#",
+                              "dbp" = "http://dbpedia.org/property/")) %>% 
+#      spq_add("?review schema:mentions dbr:Aigle") %>% # Nostradamus & his Eagle is mentioned in exactly one review
+      spq_add("?review rdf:type schema:ClaimReview") %>%
+      spq_add("?review schema:mentions ?mentioned") %>% 
+      spq_add("?review schema:datePublished ?date") %>% 
+      spq_add("?review schema:author ?reviewer") %>% 
+      spq_add("?reviewer schema:name ?org") %>% 
+      spq_add("?review schema:itemReviewed ?claim") %>% 
+      spq_add("?claim cs:isClimateRelated true") %>% # who cares about climate unrelated claims?
+      spq_add("?mentioned geo:geometry ?geo") %>% 
+      spq_set(year_review = paste0("'", year, "'")) %>%  
+      spq_filter(str_sub(as.character(date), 1, 4) == year_review) %>% 
+      spq_head(500000) # should not be an issue, but we live in an age of plenty...
    
+   result <- spq_perform(query) # let the magic happen!
+   
+   # digest the results & save for future use
+   result %>% 
+      unique() %>% 
+      mutate(claim = str_remove(claim, "http://data.climatesense-project.eu/claim/")) %>% 
+      mutate(mentioned = str_remove(mentioned, "http://dbpedia.org/resource/")) %>% 
+      mutate(review = str_remove(review, "http://data.climatesense-project.eu/claim-review/")) %>% 
+      select(-reviewer) %>% 
+      st_as_sf(wkt = "geo", crs = 4326) %>% 
+      st_write("./data/dezinfo.gpkg", append = (year != 2000)) # first year = new db, all others append
+   
+   cat(paste(Sys.time(), "- year:", year, "- raw rows:", nrow(result), "- localities", nrow(unique(result)), "- reviews:", length(unique(result$review)),  "\n"), file = vystup, append = T)
+
+
+}
+
+cat(paste(Sys.time(), "finish\nelapsed time", lubridate::as.duration(Sys.time() - start_time), "\n"), file = vystup, append = T)
