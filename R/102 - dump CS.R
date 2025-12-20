@@ -33,15 +33,16 @@ for (year in 2000:lubridate::year(Sys.Date())) {
       spq_add("?review schema:itemReviewed ?claim") %>% 
       spq_add("?claim cs:isClimateRelated true") %>% # who cares about climate unrelated claims?
       spq_add("?mentioned geo:geometry ?geo") %>% 
-      spq_set(year_review = paste0("'", year, "'")) %>%  
+      spq_set(year_review = paste0("'", year, "'")) %>%  # current year of iteration
       spq_filter(str_sub(as.character(date), 1, 4) == year_review) %>% 
+      spq_select(.spq_duplicate = "distinct") %>% # no duplicities thank you
       spq_head(500000) # should not be an issue, but we live in an age of plenty...
    
    result <- spq_perform(query) # let the magic happen!
    
    # digest the results & save for future use
    result %>% 
-      unique() %>% 
+      unique() %>% # just to make certain that the select distinct worked 
       mutate(claim = str_remove(claim, "http://data.climatesense-project.eu/claim/")) %>% 
       mutate(mentioned = str_remove(mentioned, "http://dbpedia.org/resource/")) %>% 
       mutate(review = str_remove(review, "http://data.climatesense-project.eu/claim-review/")) %>% 
