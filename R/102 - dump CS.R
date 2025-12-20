@@ -49,7 +49,7 @@ for (year in 2000:lubridate::year(Sys.Date())) {
       st_as_sf(wkt = "geo", crs = 4326) %>% 
       st_write("./data/dezinfo.gpkg", append = (year != 2000)) # first year = new db, all others append
    
-   cat(paste(Sys.time(), "- year:", year, "- raw rows:", nrow(result), "- localities", nrow(unique(result)), "- reviews:", length(unique(result$review)),  "\n"), file = vystup, append = T)
+   cat(paste(Sys.time(), "| year:", year, "| raw results:", nrow(result), "| unique results:", nrow(unique(result)), "| unique reviews:", length(unique(result$review)),  "\n"), file = vystup, append = T)
 
 
 }

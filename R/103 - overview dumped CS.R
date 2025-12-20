@@ -32,16 +32,25 @@ csense %>%
    unique() %>% 
    group_by(date) %>% 
    summarise(count = n()) %>% 
+   mutate(
+   m_avg = slider::slide_index_dbl(
+      count,                       
+      .i = date,      
+      .f = ~mean(.x, na.rm = TRUE),
+      .before = lubridate::days(180),
+      .after = lubridate::days(180),)) %>%         
    ggplot(aes(x = date, y = count)) + 
    geom_point(pch = 4, alpha = 1/4) +
-#   geom_density_2d() +
-   geom_smooth(se = F, color = "red") +
+#   geom_smooth(se = F, color = "red", method = stats::loess) +
+   geom_line(color = "red", aes(y = m_avg), linewidth = 1) +
    scale_x_date(date_breaks = "2 years",
                 date_labels = "%Y") +
+   scale_y_continuous(limits = c(0, 30)) +
    theme_minimal() +
    theme(axis.title = element_blank(),
          axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
-   labs(title = paste0("Daily count of climate related claim [", length(unique(csense$claim)),"] reviews [", length(unique(csense$review)),"]"))
+   labs(title = paste0("Daily count of climate related claim [", length(unique(csense$claim)),"] reviews [", length(unique(csense$review)),"]"),
+        subtitle = "with moving average smoothing applied")
 
 ggsave("./output/temporal overview.png",
        width = 2000, height = 1500, units = "px")
